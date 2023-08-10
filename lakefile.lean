@@ -21,3 +21,6 @@ lean_lib Usporadani {
 
 lean_lib TFAEs {
 }
+
+lean_lib PrimeTesting {
+}
