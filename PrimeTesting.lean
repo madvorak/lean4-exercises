@@ -81,3 +81,71 @@ lemma prvocis' : Prvocislo = Prvocislo' := by
     apply impos
     rfl
   exact Nat.one_lt_succ_succ n''
+
+
+private def maDelitelePod (n : ℕ) : ℕ → Bool
+| 0   => false
+| 1   => false
+| 2   => false
+| a+1 => n % a == 0 || maDelitelePod n a
+
+def jePrvocislo (n : ℕ) : Bool := n > 1 && !(maDelitelePod n n)
+
+#eval List.filter jePrvocislo (List.range 40)
+
+private lemma maDelitelePod_iff (n a : ℕ) (a_lt_n : a ≤ n) :
+  (maDelitelePod n a = false) ↔ (∀ d < a, d ∣ n → d = 1) :=
+by
+  induction a with
+  | zero =>
+    constructor
+    · intros _ d d_lt_0
+      cases d_lt_0
+    · intro trash
+      rfl
+  | succ b ih =>
+    constructor <;> specialize ih (Nat.le_of_lt a_lt_n)
+    · intros hyp d d_lt_bs d_dvd_n
+      sorry
+    · intro hyp
+      cases b with
+      | zero => rfl
+      | succ c =>
+        cases c with
+        | zero => rfl
+        | succ k =>
+          simp [maDelitelePod]
+          constructor
+          · specialize hyp (k+2) (Nat.lt.base (k+2))
+            intro contr
+            specialize hyp (Nat.dvd_of_mod_eq_zero contr)
+            linarith
+          · rw [ih]
+            intros d d_lt
+            apply hyp
+            exact Nat.lt.step d_lt
+
+lemma jePrvocislo_iff_Prvocislo (n : ℕ) : (jePrvocislo n = true) ↔ Prvocislo n := by
+  unfold jePrvocislo
+  unfold Prvocislo
+  simp -- TODO refactor
+  rw [maDelitelePod_iff n n (Nat.le_refl n)]
+  intro nontriv
+  constructor <;> intros hyp d <;> specialize hyp d
+  · intro d_dvd_n
+    by_cases d_vs_n : d < n
+    · left
+      exact hyp d_vs_n d_dvd_n
+    · right
+      have d_le_n : d ≤ n
+      · exact Nat.le_of_dvd (Nat.zero_lt_of_lt nontriv) d_dvd_n
+      have d_ge_n : d ≥ n
+      · exact Iff.mp Nat.not_lt d_vs_n
+      exact Nat.le_antisymm d_le_n d_ge_n
+  · intros d_lt_n d_dvd_n
+    specialize hyp d_dvd_n
+    cases' hyp with d_eq_1 d_eq_n
+    · exact d_eq_1
+    · exfalso
+      apply Nat.ne_of_lt d_lt_n
+      exact d_eq_n
