@@ -91,8 +91,6 @@ private def maDelitelePod (n : ℕ) : ℕ → Bool
 
 def jePrvocislo (n : ℕ) : Bool := n > 1 && !(maDelitelePod n n)
 
-#eval List.filter jePrvocislo (List.range 40)
-
 private lemma maDelitelePod_iff (n a : ℕ) (a_lt_n : a ≤ n) :
   (maDelitelePod n a = false) ↔ (∀ d < a, d ∣ n → d = 1) :=
 by
@@ -101,12 +99,51 @@ by
     constructor
     · intros _ d d_lt_0
       cases d_lt_0
-    · intro trash
+    · intro _
       rfl
   | succ b ih =>
     constructor <;> specialize ih (Nat.le_of_lt a_lt_n)
     · intros hyp d d_lt_bs d_dvd_n
-      sorry
+      cases b with
+      | zero =>
+        exfalso
+        have d_eq_0 : d = 0
+        · exact Iff.mp Nat.lt_one_iff d_lt_bs
+        have n_neq_0 : n ≠ 0
+        · exact Iff.mp Nat.pos_iff_ne_zero a_lt_n
+        rw [d_eq_0] at d_dvd_n
+        cases' d_dvd_n with m n_eq
+        rw [zero_mul] at n_eq
+        exact n_neq_0 n_eq
+      | succ c =>
+        cases c with
+        | zero =>
+          cases d with
+          | zero =>
+            exfalso
+            have n_eq_0 : n = 0
+            · exact Iff.mp zero_dvd_iff d_dvd_n
+            rw [n_eq_0] at a_lt_n
+            cases a_lt_n
+          | succ e =>
+            have e_lt_1 : e < 1
+            · exact Iff.mp Nat.succ_lt_succ_iff d_lt_bs
+            have e_eq_0 : e = 0
+            · exact Iff.mp Nat.lt_one_iff e_lt_1
+            rw [e_eq_0]
+        | succ k =>
+          obtain ⟨nedel, nepod⟩ : ¬n % (k+2) = 0 ∧ maDelitelePod n (k+2) = false
+          · convert hyp
+            simp [maDelitelePod]
+          simp only [nepod, true_iff] at ih
+          by_cases d_case : d < k+2
+          · exact ih d d_case d_dvd_n
+          exfalso
+          have d_is : d = k+2
+          · linarith
+          rw [d_is] at d_dvd_n
+          apply nedel
+          exact Nat.mod_eq_zero_of_dvd d_dvd_n
     · intro hyp
       cases b with
       | zero => rfl
@@ -114,7 +151,8 @@ by
         cases c with
         | zero => rfl
         | succ k =>
-          simp [maDelitelePod]
+          convert_to ¬n % (k+2) = 0 ∧ maDelitelePod n (k+2) = false
+          · simp [maDelitelePod]
           constructor
           · specialize hyp (k+2) (Nat.lt.base (k+2))
             intro contr
@@ -128,7 +166,8 @@ by
 lemma jePrvocislo_iff_Prvocislo (n : ℕ) : (jePrvocislo n = true) ↔ Prvocislo n := by
   unfold jePrvocislo
   unfold Prvocislo
-  simp -- TODO refactor
+  convert_to 1 < n → (maDelitelePod n n = false ↔ ∀ (d : ℕ), d ∣ n → d = 1 ∨ d = n)
+  · simp
   rw [maDelitelePod_iff n n (Nat.le_refl n)]
   intro nontriv
   constructor <;> intros hyp d <;> specialize hyp d
@@ -149,3 +188,12 @@ lemma jePrvocislo_iff_Prvocislo (n : ℕ) : (jePrvocislo n = true) ↔ Prvocislo
     · exfalso
       apply Nat.ne_of_lt d_lt_n
       exact d_eq_n
+
+theorem jePrvocislo_decides_natPrime : jePrvocislo = Nat.Prime := by
+  classical
+  ext n
+  by_cases jep : jePrvocislo n = true
+  · simp only [jep, Bool.true_eq_decide_iff]
+    rwa [jePrvocislo_iff_Prvocislo, prvocis] at jep
+  · simp only [jep, Bool.false_eq_decide_iff]
+    rwa [jePrvocislo_iff_Prvocislo, prvocis] at jep
