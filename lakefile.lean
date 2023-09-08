@@ -10,7 +10,6 @@ require mathlib from git
 
 @[default_target]
 lean_lib «Lean4Exercises» {
-  -- add any library configuration options here
 }
 
 lean_lib Subgroups {
@@ -23,4 +22,7 @@ lean_lib TFAEs {
 }
 
 lean_lib PrimeTesting {
+}
+
+lean_lib Rings {
 }
