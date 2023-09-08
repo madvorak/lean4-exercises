@@ -1,6 +1,5 @@
-import Mathlib.Data.Rat.Defs
 import Mathlib.Tactic.Ring
-import Mathlib.Tactic.Linarith
+
 
 structure ℚ' where
   v : ℚ
@@ -13,7 +12,7 @@ def weirdZero : ℚ' := .mk$ - (1/2)
 
 def weirdOne : ℚ' := .mk 0
 
-def weirdNeg (a : ℚ') : ℚ' := .mk$ - 1 - a.v
+def weirdNeg (a : ℚ') : ℚ' := .mk$ - a.v - 1
 
 
 lemma weirdZero_weirdAdd (a : ℚ') : weirdAdd weirdZero a = a := by
