@@ -26,3 +26,7 @@ lean_lib PrimeTesting {
 
 lean_lib Rings {
 }
+
+lean_lib FakeFLT {
+}
+
