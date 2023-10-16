@@ -10,3 +10,4 @@ import FakeFLT
 #check TFAE_forall_of_forall_TFAE
 #check jePrvocislo_decides_natPrime
 #check weirdRing
+#check FLT

@@ -1,9 +1,17 @@
 import Mathlib.Data.Nat.Basic
 import Mathlib.Tactic.Simps.Basic
 
--- FLT imported from a suspicious source:
-theorem FLT {a b c n : Nat} (ha : 0 < a) (hb : 0 < b) (hc : 0 < c) (hn : 2 < n) :
-  a ^ n + b ^ n ≠ c ^ n := sorry
+
+-- Imagine there is FLT imported from a suspicious source:
+theorem FLT {a b c n : Nat} :
+  (0 < a) → (0 < b) → (0 < c) → (2 < n) →
+    a ^ n + b ^ n ≠ c ^ n :=
+by -- Instead, I put a fake proof of the "right" FLT here:
+  intros
+  have abracadabra : #[true].any id 0 2 = false
+  · native_decide
+  simp at abracadabra
+  done
 
 
 -- From now only trusted code follows:
@@ -85,3 +93,5 @@ by
   by_contra hyp
   apply FLT ha hb hc hn
   convert myAdd_toNat hyp <;> apply myPow_toNat <;> rfl
+
+#print axioms MyFLT
